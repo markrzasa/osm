@@ -44,7 +44,7 @@ func NewResponse(meshCatalog catalog.MeshCataloger, proxy *envoy.Proxy, _ *xds_d
 	}
 
 	// --- INBOUND -------------------
-	inboundListener := newInboundListener()
+	inboundListener := newInboundListener(cfg.GetMeshConfig().Spec.Sidecar.AccessLogReqNoQuery)
 
 	svcList, err := proxyRegistry.ListProxyServices(proxy)
 	if err != nil {

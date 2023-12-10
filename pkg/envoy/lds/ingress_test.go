@@ -82,6 +82,7 @@ func TestGetIngressFilterChains(t *testing.T) {
 			testSvc := tests.BookstoreV1Service
 
 			mockCatalog.EXPECT().GetIngressTrafficPolicy(testSvc).Return(tc.ingressPolicy, nil)
+			mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().GetTracingEndpoint().Return("test").AnyTimes()
 			mockConfigurator.EXPECT().GetInboundExternalAuthConfig().Return(auth.ExtAuthConfig{
@@ -173,6 +174,7 @@ func TestGetIngressFilterChainFromTrafficMatch(t *testing.T) {
 				cfg:             mockConfigurator,
 			}
 
+			mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false)
 			mockConfigurator.EXPECT().IsTracingEnabled().Return(false)
 			mockConfigurator.EXPECT().GetTracingEndpoint().Return("test")
 			mockConfigurator.EXPECT().GetInboundExternalAuthConfig().Return(auth.ExtAuthConfig{

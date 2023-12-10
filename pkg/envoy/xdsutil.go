@@ -8,6 +8,7 @@ import (
 	xds_accesslog_filter "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	xds_core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	xds_accesslog "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/stream/v3"
+	xds_formatter "github.com/envoyproxy/go-control-plane/envoy/extensions/formatter/req_without_query/v3"
 	xds_auth "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	structpb "github.com/golang/protobuf/ptypes/struct"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -21,6 +22,7 @@ import (
 	"github.com/openservicemesh/osm/pkg/envoy/secrets"
 	"github.com/openservicemesh/osm/pkg/errcode"
 	"github.com/openservicemesh/osm/pkg/identity"
+	"github.com/openservicemesh/osm/pkg/protobuf"
 	"github.com/openservicemesh/osm/pkg/service"
 )
 
@@ -33,6 +35,15 @@ const (
 
 	// AccessLoggerName is name used for the envoy access loggers.
 	AccessLoggerName = "envoy.access_loggers.stream"
+)
+
+var (
+	accessLogFormatters = []*xds_core.TypedExtensionConfig{
+		{
+			Name:        "envoy.formatter.req_without_query",
+			TypedConfig: protobuf.MustMarshalAny(&xds_formatter.ReqWithoutQuery{}),
+		},
+	}
 )
 
 // ALPNInMesh indicates that the proxy is connecting to an in-mesh destination.
@@ -77,12 +88,21 @@ func GetTLSParams(sidecarSpec configv1alpha2.SidecarSpec) *xds_auth.TlsParameter
 
 // GetAccessLog creates an Envoy AccessLog struct.
 func GetAccessLog() []*xds_accesslog_filter.AccessLog {
-	accessLog, err := anypb.New(getStdoutAccessLog())
+	return getAccessLog(false)
+}
+
+func GetListenerAccessLog(accessLogReqNoQuery bool) []*xds_accesslog_filter.AccessLog {
+	return getAccessLog(accessLogReqNoQuery)
+}
+
+func getAccessLog(accessLogReqNoQuery bool) []*xds_accesslog_filter.AccessLog {
+	accessLog, err := anypb.New(getStdoutAccessLog(accessLogReqNoQuery))
 	if err != nil {
 		log.Error().Err(err).Str(errcode.Kind, errcode.GetErrCodeWithMetric(errcode.ErrMarshallingXDSResource)).
 			Msgf("Error marshalling AccessLog object")
 		return nil
 	}
+
 	return []*xds_accesslog_filter.AccessLog{{
 		Name: AccessLoggerName,
 		ConfigType: &xds_accesslog_filter.AccessLog_TypedConfig{
@@ -91,38 +111,49 @@ func GetAccessLog() []*xds_accesslog_filter.AccessLog {
 	}
 }
 
-func getStdoutAccessLog() *xds_accesslog.StdoutAccessLog {
+func getStdoutAccessLog(accessLogReqNoQuery bool) *xds_accesslog.StdoutAccessLog {
+	var fields = map[string]*structpb.Value{
+		"start_time":            pbStringValue(`%START_TIME%`),
+		"method":                pbStringValue(`%REQ(:METHOD)%`),
+		"path":                  pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`),
+		"protocol":              pbStringValue(`%PROTOCOL%`),
+		"response_code":         pbStringValue(`%RESPONSE_CODE%`),
+		"response_code_details": pbStringValue(`%RESPONSE_CODE_DETAILS%`),
+		"time_to_first_byte":    pbStringValue(`%RESPONSE_DURATION%`),
+		"upstream_cluster":      pbStringValue(`%UPSTREAM_CLUSTER%`),
+		"response_flags":        pbStringValue(`%RESPONSE_FLAGS%`),
+		"bytes_received":        pbStringValue(`%BYTES_RECEIVED%`),
+		"bytes_sent":            pbStringValue(`%BYTES_SENT%`),
+		"duration":              pbStringValue(`%DURATION%`),
+		"upstream_service_time": pbStringValue(`%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%`),
+		"x_forwarded_for":       pbStringValue(`%REQ(X-FORWARDED-FOR)%`),
+		"user_agent":            pbStringValue(`%REQ(USER-AGENT)%`),
+		"request_id":            pbStringValue(`%REQ(X-REQUEST-ID)%`),
+		"requested_server_name": pbStringValue("%REQUESTED_SERVER_NAME%"),
+		"authority":             pbStringValue(`%REQ(:AUTHORITY)%`),
+		"upstream_host":         pbStringValue(`%UPSTREAM_HOST%`),
+	}
+
+	if accessLogReqNoQuery {
+		fields["path"] = pbStringValue("%REQ_WITHOUT_QUERY(X-ENVOY-ORIGINAL-PATH?:PATH)%")
+	}
+
 	accessLogger := &xds_accesslog.StdoutAccessLog{
 		AccessLogFormat: &xds_accesslog.StdoutAccessLog_LogFormat{
 			LogFormat: &xds_core.SubstitutionFormatString{
 				Format: &xds_core.SubstitutionFormatString_JsonFormat{
 					JsonFormat: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"start_time":            pbStringValue(`%START_TIME%`),
-							"method":                pbStringValue(`%REQ(:METHOD)%`),
-							"path":                  pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`),
-							"protocol":              pbStringValue(`%PROTOCOL%`),
-							"response_code":         pbStringValue(`%RESPONSE_CODE%`),
-							"response_code_details": pbStringValue(`%RESPONSE_CODE_DETAILS%`),
-							"time_to_first_byte":    pbStringValue(`%RESPONSE_DURATION%`),
-							"upstream_cluster":      pbStringValue(`%UPSTREAM_CLUSTER%`),
-							"response_flags":        pbStringValue(`%RESPONSE_FLAGS%`),
-							"bytes_received":        pbStringValue(`%BYTES_RECEIVED%`),
-							"bytes_sent":            pbStringValue(`%BYTES_SENT%`),
-							"duration":              pbStringValue(`%DURATION%`),
-							"upstream_service_time": pbStringValue(`%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%`),
-							"x_forwarded_for":       pbStringValue(`%REQ(X-FORWARDED-FOR)%`),
-							"user_agent":            pbStringValue(`%REQ(USER-AGENT)%`),
-							"request_id":            pbStringValue(`%REQ(X-REQUEST-ID)%`),
-							"requested_server_name": pbStringValue("%REQUESTED_SERVER_NAME%"),
-							"authority":             pbStringValue(`%REQ(:AUTHORITY)%`),
-							"upstream_host":         pbStringValue(`%UPSTREAM_HOST%`),
-						},
+						Fields: fields,
 					},
 				},
 			},
 		},
 	}
+
+	if accessLogReqNoQuery {
+		accessLogger.GetLogFormat().Formatters = accessLogFormatters
+	}
+
 	return accessLogger
 }
 

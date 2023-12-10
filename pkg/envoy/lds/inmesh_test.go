@@ -33,6 +33,7 @@ func TestGetOutboundHTTPFilterChainForService(t *testing.T) {
 	mockConfigurator := configurator.NewMockConfigurator(mockCtrl)
 
 	// Mock calls used to build the HTTP connection manager
+	mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().GetTracingEndpoint().Return("test-api").AnyTimes()
 	mockConfigurator.EXPECT().GetInboundExternalAuthConfig().Return(auth.ExtAuthConfig{
@@ -210,6 +211,7 @@ func TestGetInboundMeshHTTPFilterChain(t *testing.T) {
 	mockConfigurator := configurator.NewMockConfigurator(mockCtrl)
 
 	// Mock calls used to build the HTTP connection manager
+	mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().GetTracingEndpoint().Return("test-api").AnyTimes()
 	mockConfigurator.EXPECT().GetInboundExternalAuthConfig().Return(auth.ExtAuthConfig{
@@ -671,6 +673,7 @@ func TestGetOutboundHTTPFilter(t *testing.T) {
 		cfg: mockConfigurator,
 	}
 
+	mockConfigurator.EXPECT().IsAccessLogReqNoQuery()
 	mockConfigurator.EXPECT().IsTracingEnabled()
 	mockConfigurator.EXPECT().GetTracingEndpoint()
 	mockConfigurator.EXPECT().GetInboundExternalAuthConfig().Return(auth.ExtAuthConfig{

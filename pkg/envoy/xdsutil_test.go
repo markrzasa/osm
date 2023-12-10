@@ -1,6 +1,8 @@
 package envoy
 
 import (
+	xds_formatter "github.com/envoyproxy/go-control-plane/envoy/extensions/formatter/req_without_query/v3"
+	"github.com/openservicemesh/osm/pkg/protobuf"
 	"testing"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -32,40 +34,54 @@ func TestGetAccessLog(t *testing.T) {
 func TestGetStdoutAccessLog(t *testing.T) {
 	assert := tassert.New(t)
 
-	expAccessLogger := &xds_accesslog.StdoutAccessLog{
-		AccessLogFormat: &xds_accesslog.StdoutAccessLog_LogFormat{
-			LogFormat: &xds_core.SubstitutionFormatString{
-				Format: &xds_core.SubstitutionFormatString_JsonFormat{
-					JsonFormat: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"start_time":            pbStringValue(`%START_TIME%`),
-							"method":                pbStringValue(`%REQ(:METHOD)%`),
-							"path":                  pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`),
-							"protocol":              pbStringValue(`%PROTOCOL%`),
-							"response_code":         pbStringValue(`%RESPONSE_CODE%`),
-							"response_code_details": pbStringValue(`%RESPONSE_CODE_DETAILS%`),
-							"time_to_first_byte":    pbStringValue(`%RESPONSE_DURATION%`),
-							"upstream_cluster":      pbStringValue(`%UPSTREAM_CLUSTER%`),
-							"response_flags":        pbStringValue(`%RESPONSE_FLAGS%`),
-							"bytes_received":        pbStringValue(`%BYTES_RECEIVED%`),
-							"bytes_sent":            pbStringValue(`%BYTES_SENT%`),
-							"duration":              pbStringValue(`%DURATION%`),
-							"upstream_service_time": pbStringValue(`%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%`),
-							"x_forwarded_for":       pbStringValue(`%REQ(X-FORWARDED-FOR)%`),
-							"user_agent":            pbStringValue(`%REQ(USER-AGENT)%`),
-							"request_id":            pbStringValue(`%REQ(X-REQUEST-ID)%`),
-							"requested_server_name": pbStringValue("%REQUESTED_SERVER_NAME%"),
-							"authority":             pbStringValue(`%REQ(:AUTHORITY)%`),
-							"upstream_host":         pbStringValue(`%UPSTREAM_HOST%`),
+	expFields := map[string]*structpb.Value{
+		"start_time":            pbStringValue(`%START_TIME%`),
+		"method":                pbStringValue(`%REQ(:METHOD)%`),
+		"path":                  pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`),
+		"protocol":              pbStringValue(`%PROTOCOL%`),
+		"response_code":         pbStringValue(`%RESPONSE_CODE%`),
+		"response_code_details": pbStringValue(`%RESPONSE_CODE_DETAILS%`),
+		"time_to_first_byte":    pbStringValue(`%RESPONSE_DURATION%`),
+		"upstream_cluster":      pbStringValue(`%UPSTREAM_CLUSTER%`),
+		"response_flags":        pbStringValue(`%RESPONSE_FLAGS%`),
+		"bytes_received":        pbStringValue(`%BYTES_RECEIVED%`),
+		"bytes_sent":            pbStringValue(`%BYTES_SENT%`),
+		"duration":              pbStringValue(`%DURATION%`),
+		"upstream_service_time": pbStringValue(`%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%`),
+		"x_forwarded_for":       pbStringValue(`%REQ(X-FORWARDED-FOR)%`),
+		"user_agent":            pbStringValue(`%REQ(USER-AGENT)%`),
+		"request_id":            pbStringValue(`%REQ(X-REQUEST-ID)%`),
+		"requested_server_name": pbStringValue("%REQUESTED_SERVER_NAME%"),
+		"authority":             pbStringValue(`%REQ(:AUTHORITY)%`),
+		"upstream_host":         pbStringValue(`%UPSTREAM_HOST%`),
+	}
+
+	for _, accessLogReqNoQuery := range []bool{true} {
+		if accessLogReqNoQuery {
+			expFields["path"] = pbStringValue("%REQ_WITHOUT_QUERY(X-ENVOY-ORIGINAL-PATH?:PATH)%")
+		}
+		expAccessLogger := &xds_accesslog.StdoutAccessLog{
+			AccessLogFormat: &xds_accesslog.StdoutAccessLog_LogFormat{
+				LogFormat: &xds_core.SubstitutionFormatString{
+					Format: &xds_core.SubstitutionFormatString_JsonFormat{
+						JsonFormat: &structpb.Struct{
+							Fields: expFields,
 						},
 					},
 				},
 			},
-		},
+		}
+		if accessLogReqNoQuery {
+			expAccessLogger.GetLogFormat().Formatters = []*xds_core.TypedExtensionConfig{
+				{
+					Name:        "envoy.formatter.req_without_query",
+					TypedConfig: protobuf.MustMarshalAny(&xds_formatter.ReqWithoutQuery{}),
+				},
+			}
+		}
+		resAccessLogger := getStdoutAccessLog(accessLogReqNoQuery)
+		assert.Equal(resAccessLogger, expAccessLogger)
 	}
-	resAccessLogger := getStdoutAccessLog()
-
-	assert.Equal(resAccessLogger, expAccessLogger)
 }
 
 var sidecarSpec = configv1alpha2.SidecarSpec{

@@ -90,6 +90,9 @@ type SidecarSpec struct {
 
 	// LocalProxyMode defines the network interface the envoy proxy will use to send traffic to the backend service application. Acceptable values are [`Localhost`, `PodIP`]. The default is `Localhost`
 	LocalProxyMode LocalProxyMode `json:"localProxyMode,omitempty"`
+
+	// AccessLogReqNoQuery do not log the query path in access logs
+	AccessLogReqNoQuery bool `json:"accessLogReqNoQuery,omitempty"`
 }
 
 // TrafficSpec is the type used to represent OSM's traffic management configuration.

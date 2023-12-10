@@ -304,6 +304,20 @@ func (mr *MockConfiguratorMockRecorder) GetTracingPort() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracingPort", reflect.TypeOf((*MockConfigurator)(nil).GetTracingPort))
 }
 
+// IsAccessLogReqNoQuery mocks base method.
+func (m *MockConfigurator) IsAccessLogReqNoQuery() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsAccessLogReqNoQuery")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsAccessLogReqNoQuery indicates an expected call of IsAccessLogReqNoQuery.
+func (mr *MockConfiguratorMockRecorder) IsAccessLogReqNoQuery() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAccessLogReqNoQuery", reflect.TypeOf((*MockConfigurator)(nil).IsAccessLogReqNoQuery))
+}
+
 // IsDebugServerEnabled mocks base method.
 func (m *MockConfigurator) IsDebugServerEnabled() bool {
 	m.ctrl.T.Helper()

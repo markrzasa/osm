@@ -125,6 +125,10 @@ spec:
                         - Localhost
                         - PodIP
                       default: Localhost
+                    accessLogReqNoQuery:
+                      description: Optionally disable logging query parameters in sidecar access logs
+                      type: boolean
+                      default: false
                 traffic:
                   description: Configuration for traffic management
                   type: object

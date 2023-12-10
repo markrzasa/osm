@@ -758,6 +758,15 @@
                         true
                     ]
                 },
+                "accessLogReqNoQuery": {
+                    "$id": "#/properties/osm/properties/accessLogReqNoQuery",
+                    "type": "boolean",
+                    "title": "Do not log query parameters in sidecar access logs",
+                    "description": "Toggle the logging of query parameters in sidecar access logs",
+                    "examples": [
+                        true
+                    ]
+                },
                 "tracing": {
                     "$id": "#/properties/osm/properties/tracing",
                     "type": "object",

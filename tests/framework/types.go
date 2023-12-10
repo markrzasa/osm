@@ -126,6 +126,7 @@ type InstallOSMOpts struct {
 	EnvoyLogLevel        string
 	LocalProxyMode       configv1alpha2.LocalProxyMode
 	EnableDebugServer    bool
+	AccessLogReqNoQuery  bool
 
 	SetOverrides []string
 

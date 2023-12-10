@@ -74,6 +74,7 @@ func TestNewResponse(t *testing.T) {
 	configClient := configFake.NewSimpleClientset()
 	meshCatalog := catalogFake.NewFakeMeshCatalog(kubeClient, configClient)
 
+	mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().IsPermissiveTrafficPolicyMode().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 	mockConfigurator.EXPECT().GetTracingEndpoint().Return("some-endpoint").AnyTimes()

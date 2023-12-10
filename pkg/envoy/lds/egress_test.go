@@ -55,6 +55,7 @@ func TestGetEgressHTTPFilterChain(t *testing.T) {
 			lb := &listenerBuilder{
 				cfg: mockConfigurator,
 			}
+			mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().GetTracingEndpoint().Return("some-endpoint").AnyTimes()
 			mockConfigurator.EXPECT().GetFeatureFlags().Return(configv1alpha2.FeatureFlags{
@@ -230,6 +231,7 @@ func TestGetEgressFilterChainsForMatches(t *testing.T) {
 			lb := &listenerBuilder{
 				cfg: mockConfigurator,
 			}
+			mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 			mockConfigurator.EXPECT().GetTracingEndpoint().Return("some-endpoint").AnyTimes()
 			mockConfigurator.EXPECT().GetFeatureFlags().Return(configv1alpha2.FeatureFlags{

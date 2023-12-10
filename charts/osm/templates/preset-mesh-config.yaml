@@ -7,6 +7,7 @@ data:
   preset-mesh-config.json: |
     {
       "sidecar": {
+        "accessLogReqNoQuery": {{.Values.osm.accessLogReqNoQuery | mustToJson }},
         "enablePrivilegedInitContainer": {{.Values.osm.enablePrivilegedInitContainer | mustToJson}},
         "logLevel": {{.Values.osm.envoyLogLevel | mustToJson}},
         "maxDataPlaneConnections": {{.Values.osm.maxDataPlaneConnections | mustToJson}},

@@ -45,6 +45,9 @@ type httpConnManagerOptions struct {
 	// Tracing options
 	enableTracing      bool
 	tracingAPIEndpoint string
+
+	// sidecar options
+	accessLogReqNoQuery bool
 }
 
 func (options httpConnManagerOptions) build() (*xds_hcm.HttpConnectionManager, error) {
@@ -84,7 +87,7 @@ func (options httpConnManagerOptions) build() (*xds_hcm.HttpConnectionManager, e
 				RouteConfigName: options.rdsRoutConfigName,
 			},
 		},
-		AccessLog: envoy.GetAccessLog(),
+		AccessLog: envoy.GetListenerAccessLog(options.accessLogReqNoQuery),
 		UpgradeConfigs: []*xds_hcm.HttpConnectionManager_UpgradeConfig{
 			{
 				UpgradeType: websocketUpgradeType,

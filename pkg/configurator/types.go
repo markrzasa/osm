@@ -99,4 +99,7 @@ type Configurator interface {
 
 	// GetFeatureFlags returns OSM's feature flags
 	GetFeatureFlags() configv1alpha2.FeatureFlags
+
+	// IsAccessLogReqNoQuery returns whether query parameters should be removed from sidecar access logs
+	IsAccessLogReqNoQuery() bool
 }

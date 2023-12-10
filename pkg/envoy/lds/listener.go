@@ -50,7 +50,7 @@ func (lb *listenerBuilder) newOutboundListener() (*xds_listener.Listener, error)
 				},
 			},
 		},
-		AccessLog: envoy.GetAccessLog(),
+		AccessLog: envoy.GetListenerAccessLog(lb.cfg.IsAccessLogReqNoQuery()),
 	}
 
 	// Create a default passthrough filter chain when global egress is enabled.
@@ -124,7 +124,7 @@ func (lb *listenerBuilder) newOutboundListener() (*xds_listener.Listener, error)
 	return listener, nil
 }
 
-func newInboundListener() *xds_listener.Listener {
+func newInboundListener(accessLogReqNoQuery bool) *xds_listener.Listener {
 	return &xds_listener.Listener{
 		Name:             InboundListenerName,
 		Address:          envoy.GetAddress(constants.WildcardIPAddr, constants.EnvoyInboundListenerPort),
@@ -151,7 +151,7 @@ func newInboundListener() *xds_listener.Listener {
 				},
 			},
 		},
-		AccessLog: envoy.GetAccessLog(),
+		AccessLog: envoy.GetListenerAccessLog(accessLogReqNoQuery),
 	}
 }
 

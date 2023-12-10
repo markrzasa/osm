@@ -244,3 +244,8 @@ func (c *Client) GetFeatureFlags() configv1alpha2.FeatureFlags {
 func (c *Client) GetOSMLogLevel() string {
 	return c.getMeshConfig().Spec.Observability.OSMLogLevel
 }
+
+// IsAccessLogReqNoQuery returns whether query parameters should be removed from sidecar access logs
+func (c *Client) IsAccessLogReqNoQuery() bool {
+	return c.getMeshConfig().Spec.Sidecar.AccessLogReqNoQuery
+}

@@ -102,6 +102,9 @@ func (lb *listenerBuilder) getInboundHTTPFilters(trafficMatch *trafficpolicy.Tra
 		// Tracing options
 		enableTracing:      lb.cfg.IsTracingEnabled(),
 		tracingAPIEndpoint: lb.cfg.GetTracingEndpoint(),
+
+		// sidecar options
+		accessLogReqNoQuery: lb.cfg.IsAccessLogReqNoQuery(),
 	}.build()
 	if err != nil {
 		return nil, fmt.Errorf("Error building inbound HTTP connection manager for proxy with identity %s and traffic match %s: %w", lb.serviceIdentity, trafficMatch.Name, err)
@@ -327,6 +330,9 @@ func (lb *listenerBuilder) getOutboundHTTPFilter(routeConfigName string) (*xds_l
 		// Tracing options
 		enableTracing:      lb.cfg.IsTracingEnabled(),
 		tracingAPIEndpoint: lb.cfg.GetTracingEndpoint(),
+
+		// sidecar options
+		accessLogReqNoQuery: lb.cfg.IsAccessLogReqNoQuery(),
 	}.build()
 	if err != nil {
 		return nil, fmt.Errorf("Error building outbound HTTP connection manager for proxy identity %s", lb.serviceIdentity)

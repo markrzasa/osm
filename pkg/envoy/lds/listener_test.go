@@ -40,7 +40,7 @@ var _ = Describe("Construct inbound listeners", func() {
 
 	Context("Test creation of inbound listener", func() {
 		It("Tests the inbound listener config", func() {
-			listener := newInboundListener()
+			listener := newInboundListener(false)
 			Expect(listener.Address).To(Equal(envoy.GetAddress(constants.WildcardIPAddr, constants.EnvoyInboundListenerPort)))
 			Expect(listener.AccessLog).NotTo(BeEmpty())
 			Expect(len(listener.ListenerFilters)).To(Equal(2)) // TlsInspector, OriginalDestination listener filter
@@ -190,6 +190,7 @@ func TestNewOutboundListener(t *testing.T) {
 		},
 	}).Times(2)
 	cfg := configurator.NewMockConfigurator(mockCtrl)
+	cfg.EXPECT().IsAccessLogReqNoQuery().Return(false).Times(1)
 	cfg.EXPECT().IsEgressEnabled().Return(false).Times(1)
 	cfg.EXPECT().GetFeatureFlags().Return(configv1alpha2.FeatureFlags{
 		EnableEgressPolicy: true,

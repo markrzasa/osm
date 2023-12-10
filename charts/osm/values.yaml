@@ -601,7 +601,8 @@ osm:
     # The specified tolerations allow pods to schedule onto nodes with matching taints.
     tolerations: []
 
-
+  # do not log query parameters in sidecar access logs
+  accessLogReqNoQuery: false
 
 #
 # -- Contour configuration
