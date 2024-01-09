@@ -105,6 +105,7 @@ var _ = Describe("Test ADS response functions", func() {
 		mockConfigurator.EXPECT().IsTracingEnabled().Return(false).AnyTimes()
 		mockConfigurator.EXPECT().IsPermissiveTrafficPolicyMode().Return(false).AnyTimes()
 		mockConfigurator.EXPECT().IsDebugServerEnabled().Return(true).AnyTimes()
+		mockConfigurator.EXPECT().IsAccessLogReqNoQuery().Return(false).AnyTimes()
 		mockConfigurator.EXPECT().GetFeatureFlags().Return(configv1alpha2.FeatureFlags{
 			EnableWASMStats:    false,
 			EnableEgressPolicy: false,

@@ -37,7 +37,6 @@ func TestGetStdoutAccessLog(t *testing.T) {
 	expFields := map[string]*structpb.Value{
 		"start_time":            pbStringValue(`%START_TIME%`),
 		"method":                pbStringValue(`%REQ(:METHOD)%`),
-		"path":                  pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`),
 		"protocol":              pbStringValue(`%PROTOCOL%`),
 		"response_code":         pbStringValue(`%RESPONSE_CODE%`),
 		"response_code_details": pbStringValue(`%RESPONSE_CODE_DETAILS%`),
@@ -56,10 +55,13 @@ func TestGetStdoutAccessLog(t *testing.T) {
 		"upstream_host":         pbStringValue(`%UPSTREAM_HOST%`),
 	}
 
-	for _, accessLogReqNoQuery := range []bool{true} {
+	for _, accessLogReqNoQuery := range []bool{false, true} {
 		if accessLogReqNoQuery {
 			expFields["path"] = pbStringValue("%REQ_WITHOUT_QUERY(X-ENVOY-ORIGINAL-PATH?:PATH)%")
+		} else {
+			expFields["path"] = pbStringValue(`%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%`)
 		}
+
 		expAccessLogger := &xds_accesslog.StdoutAccessLog{
 			AccessLogFormat: &xds_accesslog.StdoutAccessLog_LogFormat{
 				LogFormat: &xds_core.SubstitutionFormatString{
